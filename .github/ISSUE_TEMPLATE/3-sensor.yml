@@ -145,7 +145,7 @@ body:
         wiki page [Backing up your stock firmware](https://github.com/OpenIPC/wiki/blob/master/en/backup-stock-firmware.md) has the procedure.
     validations:
       required: false
-      accept: ".zip,.gz,.tar.gz"
+      accept: ".zip,.gz"
 
   - type: upload
     id: attachments
@@ -154,4 +154,4 @@ body:
       description: Board photos, full logs, a frame showing the problem.
     validations:
       required: false
-      accept: ".log,.txt,.json,.csv,.zip,.gz,.tar.gz,.png,.jpg,.jpeg,.webp"
+      accept: ".log,.txt,.json,.csv,.zip,.gz,.png,.jpg,.jpeg,.webp"

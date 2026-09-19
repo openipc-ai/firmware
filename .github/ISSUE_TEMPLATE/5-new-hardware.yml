@@ -103,7 +103,9 @@ body:
         thing in the report: it carries the bootloader, the partition layout,
         the sensor driver and the register tables, and it stays useful long
         after the camera is gone. **Compress it first** - `.bin` is not an
-        accepted extension here, and the cap is 25 MB, which an 8 or 16 MB NOR
+        accepted extension here (nor is `.tar.gz` -- GitHub's uploader
+        takes the file, but an accept list may not name a two-part extension),
+        and the cap is 25 MB, which an 8 or 16 MB NOR
         image fits comfortably. A 128 MB NAND image will not fit; host it
         somewhere and link it in a comment instead.
         [Backing up your stock firmware](https://github.com/OpenIPC/wiki/blob/master/en/backup-stock-firmware.md)
@@ -111,7 +113,7 @@ body:
         shell.
     validations:
       required: true
-      accept: ".zip,.gz,.tar.gz"
+      accept: ".zip,.gz"
 
   - type: textarea
     id: hw_profile
@@ -196,4 +198,4 @@ body:
         photos, datasheets.
     validations:
       required: false
-      accept: ".log,.txt,.json,.csv,.pdf,.zip,.gz,.tar.gz,.png,.jpg,.jpeg,.webp"
+      accept: ".log,.txt,.json,.csv,.pdf,.zip,.gz,.png,.jpg,.jpeg,.webp"

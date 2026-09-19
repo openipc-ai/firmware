@@ -57,4 +57,4 @@ body:
       label: Attachments
     validations:
       required: false
-      accept: ".log,.txt,.json,.csv,.zip,.gz,.tar.gz,.png,.jpg,.jpeg,.webp"
+      accept: ".log,.txt,.json,.csv,.zip,.gz,.png,.jpg,.jpeg,.webp"

@@ -15,6 +15,17 @@ platform:Unknown, which is the exact failure the labeller was written to end.
 
   python3 .github/scripts/lint-issue-forms.py              # lint the tree
   python3 .github/scripts/lint-issue-forms.py --self-test  # ...and the labeller's own rules
+  python3 .github/scripts/lint-issue-forms.py --remote <owner/repo>   # ask GitHub itself
+
+GitHub's own verdict on a template is readable without a browser session, which
+matters because the template chooser is not: it redirects to a login. A file's
+**blob page** is public and carries the parsed result inline, errors and all.
+
+  https://github.com/<owner>/<repo>/blob/HEAD/.github/ISSUE_TEMPLATE/<file>
+
+--remote fetches those and prints what GitHub says. The files have to be on the
+repository's DEFAULT BRANCH for a verdict to exist, so point it at a fork you
+have pushed to, never at a pull request branch.
 
 Stdlib plus PyYAML, which `make deps` already installs.
 """
@@ -62,11 +73,18 @@ VALIDATIONS = {
     "upload": {"required", "accept"},
 }
 
-# What GitHub's uploader accepts, by category, with its size cap. Anything else
-# is rejected at submission time with no hint as to why, so an `accept:` listing
-# it is a trap for the reporter.
+# What an `accept:` list may name, by category, with its size cap.
+#
+# `.tar.gz` is the trap, and it cost a round of bisection to find. GitHub's own
+# documentation lists .tar.gz among the archive types the uploader takes, and it
+# does take them -- but an accept list matches a single extension, so naming
+# .tar.gz there fails validation with "contains invalid file extensions:
+# .tar.gz" and the entire template is dropped from the chooser with nothing
+# said. A .tar.gz file still uploads under `.gz`, so nothing is lost by leaving
+# it out. All six forms carried it on the first attempt and not one of them
+# rendered.
 ACCEPTED = {
-    ".zip": 25, ".gz": 25, ".tar.gz": 25,
+    ".zip": 25, ".gz": 25,
     ".pdf": 25, ".docx": 25, ".xlsx": 25, ".pptx": 25,
     ".png": 10, ".jpg": 10, ".jpeg": 10, ".gif": 10, ".svg": 10, ".webp": 10,
     ".mp4": 100, ".mov": 100, ".webm": 100,
@@ -279,7 +297,50 @@ def self_test():
     print(f"labeller: {len(cases)} cases pass")
 
 
+def remote(repo):
+    """Print GitHub's own validation verdict for each template on a repo.
+
+    The blob page embeds the parse result as JSON. A valid form carries
+    "errors":[]; an invalid one names the element and the reason -- which is the
+    only place that reason is ever stated, since the chooser simply omits the
+    form and the repository looks fine.
+    """
+    import urllib.request
+
+    api = f"https://api.github.com/repos/{repo}/contents/.github/ISSUE_TEMPLATE"
+    with urllib.request.urlopen(api) as handle:
+        names = [e["name"] for e in json.load(handle) if e["name"].endswith((".yml", ".yaml"))]
+
+    bad = 0
+    for name in sorted(names):
+        url = f"https://github.com/{repo}/blob/HEAD/.github/ISSUE_TEMPLATE/{name}"
+        req = urllib.request.Request(url, headers={"User-Agent": "lint-issue-forms"})
+        with urllib.request.urlopen(req) as handle:
+            page = handle.read().decode("utf-8", "replace")
+        verdicts = re.findall(r'"errors":\[(.*?)\]', page)
+        messages = re.findall(r'"message":"(.*?)"', " ".join(verdicts))
+        if messages:
+            bad += 1
+            print(f"  REJECTED  {name}")
+            for m in messages:
+                print(f"              {m}")
+        elif verdicts:
+            print(f"  ok        {name}")
+        elif name == "config.yml":
+            print(f"  ok        {name}  (chooser config)")
+        else:
+            bad += 1
+            print(f"  NO VERDICT {name} -- is it on the default branch?")
+    if bad:
+        raise SystemExit(f"{bad} template(s) GitHub will not show")
+    print(f"GitHub accepts every template on {repo}")
+
+
 def main():
+    if "--remote" in sys.argv:
+        remote(sys.argv[sys.argv.index("--remote") + 1])
+        return
+
     errors = []
     names = {}
     vendor_sets = {}
