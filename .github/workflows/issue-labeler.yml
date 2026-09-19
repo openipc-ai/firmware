@@ -21,7 +21,7 @@ jobs:
     # clone should not spend the owner's Actions minutes relabelling their
     # issues. There is no pull_request disjunct here because this never runs on
     # one.
-    if: github.repository == 'OpenIPC/firmware'
+    if: github.repository == 'OpenIPC/firmware' || github.repository == 'openipc-ai/firmware'  # DEMO BRANCH ONLY
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
