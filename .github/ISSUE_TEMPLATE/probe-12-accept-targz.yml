@@ -1,0 +1,14 @@
+name: PROBE 12 accept with .tar.gz
+description: upload whose accept list contains a two-part extension
+body:
+  - type: input
+    id: a
+    attributes:
+      label: Anything
+  - type: upload
+    id: b
+    attributes:
+      label: Attach an archive
+    validations:
+      required: false
+      accept: ".zip,.gz,.tar.gz"
