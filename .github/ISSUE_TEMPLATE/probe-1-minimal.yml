@@ -1,9 +1,0 @@
-name: PROBE 1 minimal
-description: input only
-body:
-  - type: input
-    id: a
-    attributes:
-      label: Anything
-    validations:
-      required: true
