@@ -1,8 +1,0 @@
-name: PROBE 14 backtick pipe label
-description: a textarea whose label is code with a pipe in it
-body:
-  - type: textarea
-    id: a
-    attributes:
-      label: "`logread | tail -200`"
-      render: shell
